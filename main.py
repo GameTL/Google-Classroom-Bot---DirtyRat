@@ -3,14 +3,12 @@
 # %%
 from clearterminal import *
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
 import time
 import pytz
 import datetime
 import re
-from bs4 import BeautifulSoup
+from os import path
+from csv import writer
 
 clear()
 attempt = 1
@@ -23,8 +21,6 @@ class ClassRoom:
         self.GCClass = GCClass
         self.Link = Link
 
-# %% Classroom Input
-
 list_of_classroom = []
 
 Computer_Science = ClassRoom("Computer Science", "Mr.Kieran", "(Y13) CS", "https://classroom.google.com/u/0/c/NDEwNjM3NjM5NTha")
@@ -32,6 +28,8 @@ HomeRoom = ClassRoom("Homeroom", "Mr.Ash", "Year 13 Homeroom", "https://classroo
 
 list_of_classroom.append(Computer_Science)
 list_of_classroom.append(HomeRoom)
+
+
 
 
 # %%
@@ -42,19 +40,24 @@ list_of_classroom.append(HomeRoom)
 # Which time zone you are in, search up "time zone pytz {your time zone name}"
 TIMEZONE = 'Asia/Bangkok'
 
+
 # Mode for getting the email and password to fill into google login page
 mode_list = ["hard_code", "file_based"]
 MODE = mode_list[1] # 0 for hard_code, 1 for file_based account(email & password)
 
+
 # Test Mode Yes or No?
-TEST_MODE = False # Test will run the code but not PRESS REPLY
+TEST_MODE = True # Test will run the code but not PRESS REPLY
+
 
 # Time unitll the website refreshes to 
 WAIT_TIME_FOR_NO_MATCH = 120 # Seconds
 
+
 # Valid time for the post
-time_list = ["08:", "07:"]  ###  CHANGE VARIABLE HERE  ###
+time_list = ["08:", "07:", "7 May"]  ###  CHANGE VARIABLE HERE  ###
 OPERATOR = "x*" # x* search for any place that contains each string # CASE-SENSITIVE
+
 
 
 # 0 is Computer Science
@@ -71,6 +74,10 @@ print("Attempt #{0}".format(attempt))
 
 ##############################
 ##############################
+
+
+
+
 
 # %%
 def __init_account_from_file():
@@ -184,19 +191,33 @@ def fill_comment():
 fill_comment()
 
 
+
+
+
 #%% 
 # Logging function
 def log_to_csv():
-    with open("main_log.csv", "a") as Log_File:
-        if TEST_MODE:
-            string = (CURRENT_CLASSROOM.SimpleClassName + ',"' + REPLY_COMMENT + '",' + str(datetime.datetime.now(pytz.timezone(TIMEZONE))) + ',' + str(attempt) + ' attempt,' + "TESTMODE" + "/n")
-        else:
-            string = (CURRENT_CLASSROOM.SimpleClassName + ',"' + REPLY_COMMENT + '",' + str(datetime.datetime.now(pytz.timezone(TIMEZONE))) + ',' + str(attempt) + ' attempt,' + "/n"))
-        Log_File.write(string)
-        print('Log successful')
-        print(string)
+    if path.exists('main_log.csv'):
+        with open("main_log.csv", "a") as Log_File:
+            Log_File_writer = writer(Log_File)
+            if TEST_MODE:
+                string_list = [CURRENT_CLASSROOM.SimpleClassName, REPLY_COMMENT, str(datetime.datetime.now(pytz.timezone(TIMEZONE))), "{0} attempt".format(attempt), "TESTMODE"]
+            else:
+                string_list = [CURRENT_CLASSROOM.SimpleClassName, REPLY_COMMENT, str(datetime.datetime.now(pytz.timezone(TIMEZONE))), "{0} attempt".format(attempt)]
+            Log_File_writer.writerow(string_list)
+            print('Log successful')
+            print(string_list)
+    else:
+        with open("main_log.csv", "w") as Log_File:
+            Log_File_writer = writer(Log_File)
+            Log_File_writer.writerow(["Class", "String Replied", "Date&Time", "MODE"])
+            print('A new CSV is made')
+        log_to_csv()
 
 # (datetime.datetime.now(tz)).strftime("%a %d % b %Y %H:%M:%S") 
+
+
+
 
 # %% Quit 
 log_to_csv()
